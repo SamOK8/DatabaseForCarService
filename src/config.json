@@ -1,0 +1,9 @@
+{
+    "database": {
+        "host": "localhost",
+        "user": "root",
+        "password": "root",
+        "database": "servicewarehouse"
+    },
+    "import_file": "data_import.json"
+}
