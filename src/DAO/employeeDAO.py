@@ -7,8 +7,8 @@ class employeeDAO:
 
     def addEmployee(self, surname, email):
         query = """
-        INSERT INTO employee (surname, email)
-        VALUES (%s, %s)
+        insert into employee (surname, email)
+        values (%s, %s)
         """
         self.cursor.execute(query, (surname, email))
         self.connection.commit()

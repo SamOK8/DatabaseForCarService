@@ -1,4 +1,5 @@
 import json
+import csv
 import datetime
 
 import mysql.connector
@@ -35,13 +36,102 @@ class Service:
         car_data = self.car_dao.findCarByVin(vin)
         if not car_data:
             self.car_dao.addCar(vin, brand, model, year, engineType)
+            car_data = self.car_dao.findCarByVin(vin)
 
-        self.order_dao.add_service_order(car_data(0), employee_id, datetime.datetime.now(), False)
+        print(car_data[0][0])
+        self.order_dao.add_service_order(car_data[0][0], employee_id, datetime.datetime.now(), False)
+
+
+    def deleteOrder(self, order_id):
+        self.order_dao.delete_order(order_id)
+
+    def get_order_info(self):
+        return self.order_dao.get_all_orders()
+
+    def edit_order_car(self, order_id, vin, brand, model, year, engineType):
+        car = self.car_dao.findCarByVin(vin)
+        if not car:
+            self.car_dao.addCar(vin, brand, model, year, engineType)
+            car = self.car_dao.findCarByVin(vin)
+
+        car_id = car[0][0]
+
+        self.order_dao.update_order_car(order_id, car_id)
 
     # transaction 5.
-    # def addPartToOrder
+    def addPartToOrderTransaction(self, order_id, part_number, part_name, brand, price, quantity):
+        try:
+            self.conn.start_transaction()
+
+            part = self.part_dao.findPartByNumber(part_number)
+
+            if not part:
+                self.part_dao.add_part_for_transaction(part_number, part_name, brand, price)
+                part = self.part_dao.findPartByNumber(part_number)
+
+            part_id = part[0][0]
+
+            self.order_part_dao.add_part_to_order(order_id, part_id, quantity)
+
+            self.conn.commit()
+
+        except Exception:
+            self.conn.rollback()
+            raise
 
     # report 6.
-    # def
+    def getWaitingOrdersReport(self):
+        rows = self.order_dao.get_all_orders_waiting_for_parts()
+
+        report = []
+        for r in rows:
+            report.append({
+                "order_id": r[0],
+                "vin": r[1],
+                "car_brand": r[2],
+                "car_model": r[3],
+                "part_number": r[4],
+                "part_name": r[5],
+                "required_quantity": r[6],
+                "stock_quantity": r[7],
+                "missing_quantity": r[8],
+                "price": r[9],
+                "missing_price": r[10]
+            })
+
+        return report
 
     # import 7.
+    def importEmployeesFromCSV(self, file_path):
+        try:
+            with open(file_path, newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    self.emp_dao.addEmployee(
+                        row['surname'],
+                        row['email']
+                    )
+        except FileNotFoundError:
+            raise Exception("CSV file not found")
+        except KeyError:
+            raise Exception("Invalid CSV format")
+
+
+    def importPartsFromJSON(self, file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+                for part in data:
+                    self.part_dao.addPart(
+                        part['part_number'],
+                        part.get('part_name'),
+                        part.get('brand'),
+                        part['price'],
+                        part['quantity']
+                    )
+        except FileNotFoundError:
+            raise Exception("JSON file not found")
+        except KeyError:
+            raise Exception("Invalid JSON format")
+

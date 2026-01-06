@@ -4,10 +4,10 @@ class ServiceOrderPartDao:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def addPartToOrder(self, order_id, part_id, quantity):
+    def add_part_to_order(self, order_id, part_id, quantity):
         query = """
-        INSERT INTO service_order__part (order_id, part_id, quantity)
-        VALUES (%s, %s, %s)
+        insert into service_order__part (order_id, part_id, quantity)
+        values (%s, %s, %s)
         """
         self.cursor.execute(query, (order_id, part_id, quantity))
-        self.connection.commit()
+
