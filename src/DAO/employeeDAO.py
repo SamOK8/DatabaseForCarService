@@ -13,4 +13,8 @@ class employeeDAO:
         self.cursor.execute(query, (surname, email))
         self.connection.commit()
 
-    # def findBy
+    def find_employee_by_email(self, email):
+        query = "select * from employee where email= %s"
+        self.cursor.execute(query, (email,))
+        result = self.cursor.fetchall()
+        return result

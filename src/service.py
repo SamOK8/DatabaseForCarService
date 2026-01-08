@@ -15,6 +15,8 @@ class Service:
             self.config = json.load(config_json)
         self.conn = None
         self.connect()
+        self.csv_file_path = self.config['import_file_csv']
+        self.json_file_path = self.config['import_file_json']
 
     def connect(self):
         try:
@@ -32,14 +34,23 @@ class Service:
 
 
     # 4.
-    def addOrder(self, vin, brand, model, year, engineType, employee_id):
+    def addOrder(self, vin, brand, model, year, engineType, email):
+        if engineType not in ("petrol", "diesel", "electric"):
+            raise ValueError("Invalid engine type")
+        if year < 1900 or year > datetime.datetime.now().year:
+            raise ValueError("Invalid year")
+
         car_data = self.car_dao.findCarByVin(vin)
         if not car_data:
             self.car_dao.addCar(vin, brand, model, year, engineType)
             car_data = self.car_dao.findCarByVin(vin)
 
+        employee = self.emp_dao.find_employee_by_email(email)
+        if not employee:
+            raise Exception("employee not found")
+
         print(car_data[0][0])
-        self.order_dao.add_service_order(car_data[0][0], employee_id, datetime.datetime.now(), False)
+        self.order_dao.add_service_order(car_data[0][0], employee[0][0], datetime.datetime.now(), False)
 
 
     def deleteOrder(self, order_id):
@@ -58,19 +69,29 @@ class Service:
 
         self.order_dao.update_order_car(order_id, car_id)
 
+
+
     # transaction 5.
-    def addPartToOrderTransaction(self, order_id, part_number, part_name, brand, price, quantity):
+    def addPartToOrderTransaction(self, vin, part_number, part_name, brand, price, quantity):
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than 0")
+        if price <= 0:
+            raise ValueError("Price must be positive")
+
         try:
             self.conn.start_transaction()
 
             part = self.part_dao.findPartByNumber(part_number)
-
             if not part:
                 self.part_dao.add_part_for_transaction(part_number, part_name, brand, price)
                 part = self.part_dao.findPartByNumber(part_number)
 
-            part_id = part[0][0]
+            orders = self.order_dao.get_open_order_by_vin(vin)
+            if not orders:
+                raise Exception("Order not found, check vin")
 
+            part_id = part[0][0]
+            order_id = orders[0][0]
             self.order_part_dao.add_part_to_order(order_id, part_id, quantity)
 
             self.conn.commit()
@@ -102,9 +123,9 @@ class Service:
         return report
 
     # import 7.
-    def importEmployeesFromCSV(self, file_path):
+    def importEmployeesFromCSV(self):
         try:
-            with open(file_path, newline='', encoding='utf-8') as csvfile:
+            with open(self.csv_file_path, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     self.emp_dao.addEmployee(
@@ -117,9 +138,9 @@ class Service:
             raise Exception("Invalid CSV format")
 
 
-    def importPartsFromJSON(self, file_path):
+    def importPartsFromJSON(self):
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(self.json_file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
                 for part in data:
