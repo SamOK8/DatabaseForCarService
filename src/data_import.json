@@ -1,0 +1,16 @@
+[
+  {
+    "part_number": 1001,
+    "part_name": "Brake pads",
+    "brand": "Brembo",
+    "price": 1200,
+    "quantity": 5
+  },
+  {
+    "part_number": 1002,
+    "part_name": "Oil filter",
+    "brand": "Bosch",
+    "price": 300,
+    "quantity": 20
+  }
+]

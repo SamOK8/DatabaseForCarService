@@ -78,27 +78,27 @@ class Service:
         if price <= 0:
             raise ValueError("Price must be positive")
 
-        try:
-            self.conn.start_transaction()
+        # try:
+        #     # self.conn.start_transaction()
 
+        part = self.part_dao.findPartByNumber(part_number)
+        if not part:
+            self.part_dao.addPart(part_number, part_name, brand, price, 0)
             part = self.part_dao.findPartByNumber(part_number)
-            if not part:
-                self.part_dao.add_part_for_transaction(part_number, part_name, brand, price)
-                part = self.part_dao.findPartByNumber(part_number)
 
-            orders = self.order_dao.get_open_order_by_vin(vin)
-            if not orders:
-                raise Exception("Order not found, check vin")
+        orders = self.order_dao.get_open_order_by_vin(vin)
+        if not orders:
+            raise Exception("Order not found, check vin")
 
-            part_id = part[0][0]
-            order_id = orders[0][0]
-            self.order_part_dao.add_part_to_order(order_id, part_id, quantity)
+        part_id = part[0][0]
+        order_id = orders[0][0]
+        self.order_part_dao.add_part_to_order(order_id, part_id, quantity)
 
-            self.conn.commit()
+            # self.conn.commit()
 
-        except Exception:
-            self.conn.rollback()
-            raise
+        # except Exception:
+        #     self.conn.rollback()
+        #     raise
 
     # report 6.
     def getWaitingOrdersReport(self):
