@@ -5,12 +5,6 @@ class partDAO:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def add_part_for_transaction(self, part_number, part_name, brand, price):
-        query = """
-        insert into part (part_number, part_name, brand, price)
-        values (%s, %s, %s, %s)
-        """
-        self.cursor.execute(query, (part_number, part_name, brand, price))
 
     def addPart(self, part_number, part_name, brand, price, quantity):
         query = """

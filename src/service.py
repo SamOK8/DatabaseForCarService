@@ -78,8 +78,6 @@ class Service:
         if price <= 0:
             raise ValueError("Price must be positive")
 
-        # try:
-        #     # self.conn.start_transaction()
 
         part = self.part_dao.findPartByNumber(part_number)
         if not part:
@@ -94,11 +92,7 @@ class Service:
         order_id = orders[0][0]
         self.order_part_dao.add_part_to_order(order_id, part_id, quantity)
 
-            # self.conn.commit()
 
-        # except Exception:
-        #     self.conn.rollback()
-        #     raise
 
     # report 6.
     def getWaitingOrdersReport(self):

@@ -38,15 +38,6 @@ class orderDAO:
         self.connection.commit()
 
 
-    # def get_all_orders_by_car_vin(self, vin):
-    #     query = """
-    #     select o.*
-    #     from service_order o
-    #     join car c on o.car_id = c.car_id
-    #     where c.vin = %s
-    #     """
-    #     self.cursor.execute(query, (vin,))
-    #     return self.cursor.fetchall()
 
     # view - objednavky ktere cekaji na dily, k tomu info o aute a o dilech ktere cybi - pouziti pro report
     def get_all_orders_waiting_for_parts(self):
