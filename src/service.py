@@ -52,19 +52,37 @@ class Service:
         print(car_data[0][0])
         self.order_dao.add_service_order(car_data[0][0], employee[0][0], datetime.datetime.now(), False)
 
+    def deleteOrder(self, vin):
+        try:
+            orders = self.order_dao.get_open_order_by_vin(vin)
+            if not orders:
+                raise Exception("Order not found, check VIN")
 
-    def deleteOrder(self, order_id):
-        self.order_dao.delete_order(order_id)
+            order_id = orders[0][0]
+
+            self.order_part_dao.delete_parts_by_order(order_id)
+
+            self.order_dao.delete_order(order_id)
+
+            self.conn.commit()
+
+        except Exception as e:
+            self.conn.rollback()
+            raise Exception(f"Delete order failed: {e}")
 
     def get_order_info(self):
         return self.order_dao.get_all_orders()
 
-    def edit_order_car(self, order_id, vin, brand, model, year, engineType):
+    def edit_order_car(self, vin_of_car_in_order, vin, brand, model, year, engineType):
         car = self.car_dao.findCarByVin(vin)
         if not car:
             self.car_dao.addCar(vin, brand, model, year, engineType)
             car = self.car_dao.findCarByVin(vin)
 
+        orders = self.order_dao.get_open_order_by_vin(vin_of_car_in_order)
+        if not orders:
+            raise Exception("Order not found, check vin")
+        order_id = orders[0][0]
         car_id = car[0][0]
 
         self.order_dao.update_order_car(order_id, car_id)

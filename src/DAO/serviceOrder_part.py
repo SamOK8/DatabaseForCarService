@@ -11,3 +11,8 @@ class ServiceOrderPartDao:
         """
         self.cursor.execute(query, (order_id, part_id, quantity))
 
+    def delete_parts_by_order(self, order_id):
+        sql = "delete from service_order__part where order_id = %s"
+        self.cursor.execute(sql, (order_id,))
+
+
