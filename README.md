@@ -5,7 +5,7 @@
 - Samuel Hennel  
 - email: saminkoh@gmail.com
 
-
+D1
 - this is a school project for - Secondary Technical School of Electrical Engineering Jecna 30, Prague  
 date - 10.1.2026
 
